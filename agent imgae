@@ -1,0 +1,15 @@
+from PIL import Image, ImageDraw, ImageFont
+
+# Tạo một bức ảnh nền màu xanh dương đậm (Kích thước 1080x1080 cho Facebook/Instagram)
+img = Image.new('RGB', (1080, 1080), color='#1e293b')
+draw = ImageDraw.Draw(img)
+
+# Định nghĩa nội dung chữ và font (Bạn có thể đổi đường dẫn font tiếng Việt của bạn)
+text = "XIN CHÀO CODEX!\nChúc bạn một ngày làm việc hiệu quả."
+# font = ImageFont.truetype("arial.ttf", 45) # Bỏ comment nếu chạy trên máy đã có font
+
+# Chèn chữ vào chính giữa ảnh
+draw.text((100, 450), text, fill="white")
+
+# Lưu ảnh thành phẩm
+img.save("generated_image.png")
