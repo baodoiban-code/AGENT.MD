@@ -1,0 +1,27 @@
+mkdir -p /tmp/qv-demo/blank /tmp/qv-demo/dead-ref
+printf -- '---\nname: ""\ndescription: ""\n---\n\n# T\n' > /tmp/qv-demo/blank/SKILL.md
+printf -- '---\nname: t\ndescription: demo skill for validation.\n---\n\nSee [g](references/g.md).\n' > /tmp/qv-demo/dead-ref/SKILL.md
+python3 quick_validate.py /tmp/qv-demo/blank      # before: "Skill is valid!"  after: rejects empty name
+python3 quick_validate.py /tmp/qv-demo/dead-ref   # before: "Skill is valid!"  after: "Referenced file(s) not found: references/g.md"
+import os, socket, sys, threading, time, yaml
+
+srv = socket.socket(); srv.bind(("127.0.0.1", 0)); srv.listen(8)
+port = srv.getsockname()[1]
+t0 = time.time()
+def accept():
+    while True:
+        c, _ = srv.accept()
+        print(f"[{time.time()-t0:6.1f}s] connection accepted", flush=True)  # never answer
+threading.Thread(target=accept, daemon=True).start()
+
+home = "/tmp/hermes-judge-repro"; os.makedirs(home, exist_ok=True)
+yaml.safe_dump({"auxiliary": {"goal_judge": {
+    "provider": "openai", "model": "any-model",
+    "base_url": f"http://127.0.0.1:{port}/v1", "api_key": "dummy"}}},
+    open(f"{home}/config.yaml", "w"))
+os.environ["HERMES_HOME"] = home
+
+from hermes_cli import goals
+print("effective judge timeout:", goals._goal_judge_timeout())   # 60.0, not 30.0
+t = time.time()
+print(goals.judge_goal("finish the report", "I wrote the report."), f"{time.time()-t:.1f}s")
